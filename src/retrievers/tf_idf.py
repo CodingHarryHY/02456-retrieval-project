@@ -119,7 +119,13 @@ class TFIDF(Retriever):
         """
         query_vector = lil_matrix((len(queries), len(self.corpus_vocabulary)), dtype=np.float32)
 
-        # TODO: add code
+        for row_index, query in enumerate(queries):
+            tokens = self.PreprocessText(query)
+
+            for token in tokens:
+                if token in self.term_to_index:  
+                    column_index = self.term_to_index[token]
+                    query_vector[row_index, column_index] += 1
 
         return query_vector.tocsr()
 
