@@ -3,7 +3,7 @@ from src.data_utils.corpus import Corpus
 from src.retrievers.tf_idf import TFIDF
 from src.data_utils.query import Query
 from src.retrievers.utils import retrieveQueryAndGetRelevancies
-from src.evaluation.metrics import Evaluate
+from src.evaluation.metrics import Evaluate, aggregateConfusionMatrix
 
 @hydra.main(config_path='config', config_name='fiqa_experiment.yaml', version_base=None)
 def main(cfg):
@@ -40,13 +40,16 @@ def main(cfg):
     tfidf_test_relevancies = retrieveQueryAndGetRelevancies(tf_idf, test_queries, k=cfg.top_k)
 
     ### Evaluate
-    train_scores = Evaluate(tfidf_train_relevancies, train_queries)
-    val_scores = Evaluate(tfidf_val_relevancies, val_queries)
-    test_scores = Evaluate(tfidf_test_relevancies, test_queries)
+    train_scores = Evaluate(tfidf_train_relevancies, train_queries, k=cfg.top_k)
+    val_scores = Evaluate(tfidf_val_relevancies, val_queries, k=cfg.top_k)
+    test_scores = Evaluate(tfidf_test_relevancies, test_queries, k=cfg.top_k)
+    cm = aggregateConfusionMatrix(tfidf_test_relevancies, test_queries, cfg.top_k, len(tf_idf.index.GetDocuments()))
+    
 
     print(f'Train results: {train_scores}')
     print(f'Val results: {val_scores}')
     print(f'Test results: {test_scores}')
+    print("Test confusion matrix:", cm)
 
 if __name__ == '__main__':
     main()
